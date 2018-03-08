@@ -7,7 +7,9 @@ from flask import Flask, jsonify, abort, make_response
 from flask_restful import Api, Resource, reqparse, fields, marshal
 from flask_httpauth import HTTPBasicAuth
 
+
 app = Flask(__name__, static_url_path="")
+app.config['CORS_HEADERS'] = 'Content-Type'
 api = Api(app)
 auth = HTTPBasicAuth()
 
@@ -29,7 +31,7 @@ tasks = [
     {
         'id': 1,
         'title': u'Buy groceries',
-        'description': u'Milk, Cheese, Pizza, Fruit, Tylenol',
+        'description': u'Milk, Cheese, Pizza, Fruit, Tylenol, Crackers',
         'done': False
     },
     {
@@ -44,7 +46,8 @@ task_fields = {
     'title': fields.String,
     'description': fields.String,
     'done': fields.Boolean,
-    'uri': fields.Url('task')
+    'uri': fields.Url('task'),
+    'id':fields.String
 }
 
 
@@ -86,6 +89,7 @@ class TaskAPI(Resource):
         super(TaskAPI, self).__init__()
 
     def get(self, id):
+
         task = [task for task in tasks if task['id'] == id]
         if len(task) == 0:
             abort(404)

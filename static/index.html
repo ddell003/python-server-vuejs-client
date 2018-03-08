@@ -13,47 +13,14 @@
 </head>
 <body>
     <div class="" id="app">
-        <nav class="navbar navbar-default navbar-static-top">
-          <div class="container">
-            <div class="navbar-header">
-              <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-              </button>
-              <a class="navbar-brand" href="#">ToDo API Client Demo</a>
-            </div>
-            <div id="navbar" class="navbar-collapse collapse">
-              <ul class="nav navbar-nav">
-                <li class="active"><a href="#">Home</a></li>
-                <li><a href="#about">About</a></li>
-                <li><a href="#contact">Contact</a></li>
-                <li class="dropdown">
-                  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
-                  <ul class="dropdown-menu">
-                    <li><a href="#">Action</a></li>
-                    <li><a href="#">Another action</a></li>
-                    <li><a href="#">Something else here</a></li>
-                    <li role="separator" class="divider"></li>
-                    <li class="dropdown-header">Nav header</li>
-                    <li><a href="#">Separated link</a></li>
-                    <li><a href="#">One more separated link</a></li>
-                  </ul>
-                </li>
-              </ul>
-              <ul class="nav navbar-nav navbar-right">
-                <li><a href="../navbar/">Default</a></li>
-                <li class="active"><a href="./">Static top <span class="sr-only">(current)</span></a></li>
-                <li><a href="../navbar-fixed-top/">Fixed top</a></li>
-              </ul>
-            </div><!--/.nav-collapse -->
-          </div>
-        </nav>
+        <nav-bar></nav-bar>
         <div class="container">
             <h3>{{tasksTitle}}</h3>
 
             <task-list></task-list>
+
+            
+            
         </div>
         
     </div>
@@ -64,6 +31,10 @@
     <!-- Latest compiled and minified JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@2.5.13/dist/vue.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.js"></script>
+
+    
     <script type="text/javascript">
 
         Vue.component('task-item', {
@@ -75,10 +46,25 @@
 
                 template: 
                 `
-                    <ul>
-                        <task-item v-for="task in tasks">{{ task.task }}</task-item>
+                    <div class="taskItem">
 
-                    </ul>
+                        <div class="col-lg-4 form-group">
+                            <ul>
+                                <task-item style="margin-top:3px" v-for="task in tasks" v-bind:data="task" v-bind:key="task.id">
+                                    {{ task.title }} <button class="btn-danger pull-right btn-xs" @click="deleteTask(task)">x</button>
+                                </task-item>
+
+                            </ul>
+
+                            
+
+                            <div class="col-lg-9">
+                                <input type="text" class="form-control" placeholder="New Task" v-model="newTask">
+                            </div>
+                            <button class="btn btn-primary" @click="addTask">Add Task</button>
+                        </div>
+                    </div>
+
                 `
 
 
@@ -86,27 +72,186 @@
 
                 data(){
                     return {
-                        tasks: [
-
-                            {task:'Go to store', description:'', complete:true},
-                            {task:'Go to bank', description:'', complete:false},
-                            {task:'Go to home', description:'', complete:true},
-                            {task:'Go to somewhere', description:'', complete:true},
-                            
-                        ]
+                        tasks: this.getTasks(),
+                        newTask:'',
+                        nextId:5,
+                        loading:false,
                     };
                 },
+                methods:{
+                    addTask(){
+                        if(this.newTask){
+                            var item = {id:this.nextId, title:this.newTask, description:'', complete:false};
+                            this.tasks.push(item)
+                            console.log('adding task...')
+                            this.newTask = '';
+                            this.nextId++;
+                            this.apiAddTask(this.newTask)
+                        }
+                    },
+                    getTasks(){
+
+                        console.log('getting tasks');
+                        axios.get("http://localhost:5000/todo/api/v1.0/tasks",{
+                            auth: {
+                              username: 'admin',
+                              password: 'admin'
+                            },
+                            
+                            crossDomain : true,
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json',
+                                'Access-Control-Allow-Origin':'*'
+                            }
+                        })
+                          .then((response)  =>  {
+                            this.loading = false;
+                            console.log('axios success');
+                            console.log(response.data);
+                            this.tasks = response.data.tasks
+
+                            //this.jokes = response.data.value;
+                          }, (error)  =>  {
+                            this.loading = false;
+                            console.log('axios failed');
+                            console.log(error);
+                          })
+                    },
+                    deleteTask(task){
+                        console.log('deleting task...');
+                        tasks = this.tasks;
+                        console.log(task.id);
+                        for(var i = 0; i < tasks.length; i++){
+                            if(tasks[i].id == task.id){
+                                console.log('found item to delte');
+                                
+                                this.tasks = tasks.splice(i, 1)
+                            }
+                        }
+                        this.apiDelete(task.id)
+                        
+                    },
+                    apiDelete(id){
+                        axios.delete("http://localhost:5000/todo/api/v1.0/tasks/"+id,{
+                            auth: {
+                              username: 'admin',
+                              password: 'admin'
+                            },
+                            
+                            crossDomain : true,
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json',
+                                'Access-Control-Allow-Origin':'*'
+                            }
+                        })
+                          .then((response)  =>  {
+                            this.loading = false;
+                            console.log('axios success');
+
+                            //this.jokes = response.data.value;
+                          }, (error)  =>  {
+                            this.loading = false;
+                            console.log('axios failed');
+                            console.log(error);
+                          })
+                    },
+                    apiAddTask(task){
+
+                        //axios.defaults.xsrfCookieName = 'csrftoken';
+                        //axios.defaults.xsrfHeaderName = 'X-CSRFToken';
+                        axios({
+                            method: 'post',
+                            url: 'http://localhost:5000/todo/api/v1.0/tasks',
+                            crossDomain : true,
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json',
+                                'Access-Control-Allow-Origin':'*',
+                            },
+                            data: {
+                                title: task.title,
+                                description: 'Flintstone',
+                                done:'false',
+                                
+                            },
+                            auth: {
+                                username: 'admin',
+                                password: 'admin'
+                            }, 
+
+                        })
+                        .then((response)  =>  {
+                            this.loading = false;
+                            console.log('axios success');
+
+                          }, (error)  =>  {
+                            this.loading = false;
+                            console.log('axios failed');
+                            console.log(error);
+                          })
+
+                    }
+
+            }
 
                 
             });
 
-        new Vue({
-            el: '#app',
-            data: {
-                tasksTitle:'To do list:'
-            }
+            Vue.component('nav-bar', {
 
-        });
+                template: 
+                `
+                <div class="navBar">
+                    <nav class="navbar navbar-default navbar-static-top">
+                      <div class="container">
+                        <div class="navbar-header">
+                          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                            <span class="sr-only">Toggle navigation</span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                          </button>
+                          <a class="navbar-brand" href="#">ToDo API Client Demo</a>
+                        </div>
+                        <div id="navbar" class="navbar-collapse collapse">
+                          <ul class="nav navbar-nav">
+                            <li class="active"><a href="#">Home</a></li>
+                            <li><a href="#about">About</a></li>
+                            <li><a href="#contact">Contact</a></li>
+                            <li class="dropdown">
+                              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
+                              <ul class="dropdown-menu">
+                                <li><a href="#">Action</a></li>
+                                <li><a href="#">Another action</a></li>
+                                <li><a href="#">Something else here</a></li>
+                                <li role="separator" class="divider"></li>
+                                <li class="dropdown-header">Nav header</li>
+                                <li><a href="#">Separated link</a></li>
+                                <li><a href="#">One more separated link</a></li>
+                              </ul>
+                            </li>
+                          </ul>
+                    
+                        </div><!--/.nav-collapse -->
+                      </div>
+                    </nav>
+                </div>
+                `
+            });
+
+            new Vue({
+                el: '#app',
+                data: {
+                    tasksTitle:'To do list:',
+                    
+                },
+                
+
+            });
+
+            
 
         
     </script>

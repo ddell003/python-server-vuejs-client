@@ -1,7 +1,7 @@
 # python-server-vuejs-client
 python server using flask with vuejs front end
 
-REST API using Python featuring a server written in Python and a web client written in Javascript using VueJs Framework.
+REST API using Python featuring a server written in Python and a web client written in Javascript using VueJs Framework and axios.
 
 Setup
 -----
@@ -16,7 +16,10 @@ Setup
 - Open `http://localhost:5000/index.html` on your web browser to run the client
 
 
-## @todo
+## To expand:
 
--need to set up axios and make vue componets hit python api to populate tasks list
+-setup a modal to capture user name and password and save it in local storage
+-set up put so you can mark items as done
+-set up a description field so you can see descriptions of a task
+
 
