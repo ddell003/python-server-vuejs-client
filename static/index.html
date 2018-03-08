@@ -84,9 +84,10 @@
                             var item = {id:this.nextId, title:this.newTask, description:'', complete:false};
                             this.tasks.push(item)
                             console.log('adding task...')
+                            this.apiAddTask(item);
                             this.newTask = '';
                             this.nextId++;
-                            this.apiAddTask(this.newTask)
+                            
                         }
                     },
                     getTasks(){
@@ -159,38 +160,47 @@
                     },
                     apiAddTask(task){
 
+                        console.log('making api call...');
+                        console.log(task.title);
+
+
                         //axios.defaults.xsrfCookieName = 'csrftoken';
                         //axios.defaults.xsrfHeaderName = 'X-CSRFToken';
                         axios({
                             method: 'post',
-                            url: 'http://localhost:5000/todo/api/v1.0/tasks',
+                            url: 'http://localhost:5000/todo/api/v1.0/tasks',    
+                            data: {
+                                title: task.title,
+                                description: 'Flintstone',
+                                done:'false',
+                                
+                            },      
+                            auth: {
+                                username: 'admin',
+                                password: 'admin'
+                            }, 
                             crossDomain : true,
                             headers: {
                                 'Accept': 'application/json',
                                 'Content-Type': 'application/json',
                                 'Access-Control-Allow-Origin':'*',
                             },
-                            data: {
-                                title: task.title,
-                                description: 'Flintstone',
-                                done:'false',
-                                
-                            },
-                            auth: {
-                                username: 'admin',
-                                password: 'admin'
-                            }, 
 
                         })
                         .then((response)  =>  {
                             this.loading = false;
                             console.log('axios success');
 
+                            //this.jokes = response.data.value;
                           }, (error)  =>  {
                             this.loading = false;
                             console.log('axios failed');
                             console.log(error);
                           })
+
+
+
+                                                
 
                     }
 
