@@ -18,8 +18,8 @@ Setup
 
 ## To expand:
 
--setup a modal to capture user name and password and save it in local storage
--set up put so you can mark items as done
--set up a description field so you can see descriptions of a task
+- setup a modal to capture user name and password and save it in local storage
+- set up put so you can mark items as done
+- set up a description field so you can see descriptions of a task
 
 
